@@ -5,7 +5,6 @@ and how it was developed.
 <br>
 <br>
 ## Why?
----
 This project was born out of the desire challenge myself
 and use an Arduino to do something somewhat practical
 that required a lot of technical knowledge to complete.
@@ -16,7 +15,6 @@ could then be used for whatever purpose imaginable. Immediately, I got to work.
 <br>
 <br>
 ## Resources
----
 After a quick google search, I found 
 [this very detailed document from 2004](http://www.int03.co.uk/crema/hardware/gamecube/gc-control.html)
 which explains how a GameCube controller is wired and how it sends and receives data.
@@ -31,7 +29,6 @@ This will be explained more later.
 <br>
 <br>
 ## Early stages
----
 I started this project with an [Arduino Starter Kit](https://store.arduino.cc/usa/arduino-starter-kit),
 a GameCube controller extention cable, multimeter, wire cutters, and some jumper wires. 
 I cut the extention cable, separated and stripped the wires, and hooked it up according to this schematic:
@@ -62,7 +59,6 @@ being set. I knew then, that I had to dig deeper.
 <br>
 <br>
 ## Timing is Everything, Part I
----
 The thought popped in my head that, perhaps, the timing on an Arduino is not as exact as I would hope it is.
 Of course, every operation it makes has to take some sort of time, but I needed to know how long.
 
@@ -88,7 +84,7 @@ void loop() {
 This was meant to constantly send a 1 (1&#956;s low followed by 3&#956;s high). The scope
 showed this:
 
-![s1](images/s1.png)
+![s1](images/s1.PNG)
 
 Clearly, something wrong was going on here. Aside from the period being longer than 4&#956;s, The signal
 was low longer than it was high, which was absolutely not intended. Adjusting the timing in the program
@@ -98,7 +94,6 @@ work with the digital pins on the Arduino. I had to try something else.
 <br>
 <br>
 ## Alternate methods of communication
----
 Initially, I wanted to use an existing commuincation standard, specifically UART or I2C.
 After quickly deliberating how this might work, it was immediately shut down. UART sends start 
 and stop bits after every byte, which would interfere with the sequence. I2C would never work,
@@ -134,7 +129,6 @@ with the transistor.
 <br>
 <br>
 ## Timing is Everything, Part II
----
 With no other ideas, I decided to try to alter the timing between level changes to manipulate the signal
 to where it should be. I figured that `delayMicroseconds`, like `digitalWrite`, may not be as accurate
 as I hoped it would be. So, I tried to manually make a delay. My idea was to make a loop that adds 1
@@ -157,7 +151,7 @@ takes too long to change state in order to be usable.
 I ordered a logic level converter and a soldering kit and then got to work. After I wired up the circuit to
 my new device, I became very confused and worried. Using the same code as above, the oscilloscope showed this:
 
-![s4](images/s4.png)
+![s4](images/s4.PNG)
 
 Two things seemed off here: First, The peaks looked almost more like a sawtooth wave than the desired square
 wave. More importantly, the voltage was not peaking at 3.3V. I'm sure a slightly lower peak would be
