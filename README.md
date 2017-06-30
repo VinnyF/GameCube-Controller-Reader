@@ -58,7 +58,11 @@ idea what was going wrong. The data line was being set in the right order, and t
 being set. I knew then, that I had to dig deeper.
 <br>
 <br>
+<<<<<<< HEAD
 ## Doing things the hard way
+=======
+## Timing is Everything, Part I
+>>>>>>> 37e61a430ae552d9231836bcbfd33311f0dd8564
 The thought popped in my head that, perhaps, the timing on an Arduino is not as exact as I would hope it is.
 Of course, every operation it makes has to take some sort of time, but I needed to know how long.
 
@@ -128,7 +132,11 @@ takeaway, though, was that a voltage divider would not work either. So, I was ba
 with the transistor.
 <br>
 <br>
+<<<<<<< HEAD
 ## Doing things the hard(er) way
+=======
+## Timing is Everything, Part II
+>>>>>>> 37e61a430ae552d9231836bcbfd33311f0dd8564
 With no other ideas, I decided to try to alter the timing between level changes to manipulate the signal
 to where it should be. I figured that `delayMicroseconds`, like `digitalWrite`, may not be as accurate
 as I hoped it would be. So, I tried to manually make a delay. My idea was to make a loop that adds 1
@@ -165,6 +173,7 @@ bought did not have a datasheet to explain anything about timing. So, I purchase
 chip from Sparkfun which claimed to change state in the range of nanoseconds. After it finaly arrived,
 I could confirm that it indeed worked far better than the previous chip. I now thought that I finally
 had the ticket to success.
+<<<<<<< HEAD
 <br>
 <br>
 ## One step closer
@@ -192,3 +201,5 @@ This also means, then, that PIN 3 could also be used to read the data coming bac
 needed. This leaves me with the following final schematic:
 
 ![v3](images/v3.png)
+=======
+>>>>>>> 37e61a430ae552d9231836bcbfd33311f0dd8564
