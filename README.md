@@ -5,7 +5,6 @@ and how it was developed.
 <br>
 <br>
 ## Why?
----
 This project was born out of the desire challenge myself
 and use an Arduino to do something somewhat practical
 that required a lot of technical knowledge to complete.
@@ -16,7 +15,6 @@ could then be used for whatever purpose imaginable. Immediately, I got to work.
 <br>
 <br>
 ## Resources
----
 After a quick google search, I found 
 [this very detailed document from 2004](http://www.int03.co.uk/crema/hardware/gamecube/gc-control.html)
 which explains how a GameCube controller is wired and how it sends and receives data.
@@ -31,7 +29,6 @@ This will be explained more later.
 <br>
 <br>
 ## Early stages
----
 I started this project with an [Arduino Starter Kit](https://store.arduino.cc/usa/arduino-starter-kit),
 a GameCube controller extention cable, multimeter, wire cutters, and some jumper wires. 
 I cut the extention cable, separated and stripped the wires, and hooked it up according to this schematic:
@@ -61,8 +58,7 @@ idea what was going wrong. The data line was being set in the right order, and t
 being set. I knew then, that I had to dig deeper.
 <br>
 <br>
-## Timing is Everything, Part I
----
+## Doing things the hard way
 The thought popped in my head that, perhaps, the timing on an Arduino is not as exact as I would hope it is.
 Of course, every operation it makes has to take some sort of time, but I needed to know how long.
 
@@ -70,7 +66,7 @@ This is when I discovered the sad truth about high level functions: `digitalWrit
 of **15&#956;s** to execute. The GameCube controller requires timing to the very microsecond, so this just
 wouldn't work at all.
 
-So, instead of using those functions, I decided to directly change and read from the `PIND` register, which
+So, instead of using those functions, I decided to directly change and read from the `PORTD` register, which
 contains both PIN 2 and 3. However, I still wasn't able to read back any data. Since I still couldn't tell
 what was going on, I determed I had to buy an oscilloscope so that I could physically see how the
 data line changes over time. I wasn't about to drop $300+ on a good one, though, so I went with a cheaper,
@@ -88,7 +84,7 @@ void loop() {
 This was meant to constantly send a 1 (1&#956;s low followed by 3&#956;s high). The scope
 showed this:
 
-![s1](images/s1.png)
+![s1](images/s1.PNG)
 
 Clearly, something wrong was going on here. Aside from the period being longer than 4&#956;s, The signal
 was low longer than it was high, which was absolutely not intended. Adjusting the timing in the program
@@ -98,7 +94,6 @@ work with the digital pins on the Arduino. I had to try something else.
 <br>
 <br>
 ## Alternate methods of communication
----
 Initially, I wanted to use an existing commuincation standard, specifically UART or I2C.
 After quickly deliberating how this might work, it was immediately shut down. UART sends start 
 and stop bits after every byte, which would interfere with the sequence. I2C would never work,
@@ -133,8 +128,7 @@ takeaway, though, was that a voltage divider would not work either. So, I was ba
 with the transistor.
 <br>
 <br>
-## Timing is Everything, Part II
----
+## Doing things the hard(er) way
 With no other ideas, I decided to try to alter the timing between level changes to manipulate the signal
 to where it should be. I figured that `delayMicroseconds`, like `digitalWrite`, may not be as accurate
 as I hoped it would be. So, I tried to manually make a delay. My idea was to make a loop that adds 1
@@ -157,11 +151,11 @@ takes too long to change state in order to be usable.
 I ordered a logic level converter and a soldering kit and then got to work. After I wired up the circuit to
 my new device, I became very confused and worried. Using the same code as above, the oscilloscope showed this:
 
-![s4](images/s4.png)
+![s4](images/s4.PNG)
 
 Two things seemed off here: First, The peaks looked almost more like a sawtooth wave than the desired square
 wave. More importantly, the voltage was not peaking at 3.3V. I'm sure a slightly lower peak would be
-acceptable, but the ~2.5V om the example was not going to work. It was considerable worse with 
+acceptable, but the ~2.5V on the example was not going to work. It was considerable worse with 
 shorter delays. I was confused because, if NicoHood's works like this, then mine should too,
 or at least look acceptable. 
 
@@ -171,3 +165,30 @@ bought did not have a datasheet to explain anything about timing. So, I purchase
 chip from Sparkfun which claimed to change state in the range of nanoseconds. After it finaly arrived,
 I could confirm that it indeed worked far better than the previous chip. I now thought that I finally
 had the ticket to success.
+<br>
+<br>
+## One step closer
+With my working converter, I started trying to find the right delays between state changes
+to send the right information. This mostly took a lot of trial and error with adding or removing
+NOPs between operations. To make everything a little more consistant, I tried adding the `volatile`
+keyword before the assembly blocks. Also, I disabled interrupts during the process. Finally, I
+changed my approach of boolean arrays to normal bytes, checking each individual bit by bitmasking.
+Although the boolean array would work, using bytes looks and feels far more professional.
+
+After determining the right timings, I ran the entire sequence, getting the following on the scope:
+
+![s5](images/s5.PNG)
+
+Almost... something wrong is happening, but the ping seems to be successful. The first, "taller"
+part is the data that I sent. Everything after that is the response from the controller. The controller
+is supposed to send back 8 bytes of data. If you count the peaks after the sequence, theres 64, which
+means this must be the data the controller sent back.
+
+However, there must be a problem with the circuit, since the controller is unable to pull the data
+line all the way to low. After trying a few things, I determined the issue was with PIN 3 being held
+high while the controller was responding. The solution, then, would be to disable the output pin
+immediately after the sequence. An easy way to do this would be to change the pin to an input pin.
+This also means, then, that PIN 3 could also be used to read the data coming back, and PIN 2 is no longer
+needed. This leaves me with the following final schematic:
+
+![v3](images/v3.png)
