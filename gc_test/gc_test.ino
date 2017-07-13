@@ -1,15 +1,12 @@
-#include "GC.h"
+#include <GC.h>
 
-GC_Controller gc(2,3);
+GC_Controller gc(3);
 unsigned long long l_data;
 byte data[8];
 
 void setup() {
   Serial.begin(1000000);
   pinMode(3,OUTPUT);
-  pinMode(2,OUTPUT);
-  digitalWrite(2,LOW);
-
   digitalWrite(3,LOW);
 }
 

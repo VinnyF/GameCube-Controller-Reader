@@ -274,7 +274,6 @@ Currently, I want to make software that graphically displays the state of each b
 use this program to control some sort of bigger hardware project, such as a tabletop game. I don't have 
 any clear ideas yet, but I'll get to it.
 
-I also want to further improve `GC.h`, perhaps by developing it into a full library. I also really want 
-to be able to change which pin is being used on the fly.
+I also want to further improve `GC.h`, perhaps by developing it into a full library.
 
 Thanks for reading.
