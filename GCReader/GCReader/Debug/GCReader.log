@@ -1,6 +1,6 @@
 ﻿  main.cpp
 c:\program files (x86)\windows kits\10\include\10.0.15063.0\um\d2d1helper.h(152): warning C4838: conversion from 'int' to 'FLOAT' requires a narrowing conversion
-  c:\users\vincent\documents\arduino\gamecube-controller-reader\gcreader\gcreader\main.cpp(275): note: see reference to function template instantiation 'D2D1::TypeTraits<int>::Rect D2D1::Rect<int>(Type,Type,Type,Type)' being compiled
+  c:\users\vincent\documents\arduino\gamecube-controller-reader\gcreader\gcreader\main.cpp(104): note: see reference to function template instantiation 'D2D1::TypeTraits<int>::Rect D2D1::Rect<int>(Type,Type,Type,Type)' being compiled
           with
           [
               Type=int
