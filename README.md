@@ -1,6 +1,6 @@
 # GameCube Controller Reader
-This file will explain in its entirety how this project works
-and how it was developed.
+This page will explain in its entirety how this was developed. It exists for my own records as
+well as a way to help anyone who may be just starting out and wants to understand the design process. 
 <br>
 <br>
 ## Why?
@@ -10,11 +10,11 @@ that required a lot of technical knowledge to complete.
 
 One day, while I was playing a game with a GameCube controller, the idea popped in my head. 
 I thought it would be cool to be able to connect a GameCube controller to an Arduino, which
-could then be used for whatever purpose imaginable. Immediately, I got to work.
+could then be used for whatever reason imaginable. Immediately, I got to work.
 <br>
 <br>
 ## Resources
-After a quick google search, I found 
+After a quick Google search, I found 
 [this very detailed document from 2004](http://www.int03.co.uk/crema/hardware/gamecube/gc-control.html)
 which explains how a GameCube controller is wired and how it sends and receives data.
 This document became the primary source of information that I used for this project.
@@ -23,14 +23,14 @@ In addition, I consulted various references on Arduinos, especially for the sake
 
 I am well aware of [NicoHood's Nintendo Library](https://github.com/NicoHood/Nintendo),
 which I discovered during the development process. Although I did study the library,
-I wanted to do figure out how to do it on my own, so I did not use anything from that project. 
-This will be explained more later.
+I wanted to do figure out how to do everything on my own, so I did not use anything from that project. 
+This will be further explained later.
 <br>
 <br>
 ## Early stages
 I started this project with an [Arduino Starter Kit](https://store.arduino.cc/usa/arduino-starter-kit),
-a GameCube controller extention cable, multimeter, wire cutters, and some jumper wires. 
-I cut the extention cable, separated and stripped the wires, and hooked it up according to this schematic:
+a GameCube controller extension cable, multimeter, wire cutters, and some jumper wires. 
+I cut the extension cable, separated and stripped the wires, and hooked it up according to this schematic:
 
 ![v1](images/v1.png "First schematic with transistor")
 
@@ -40,8 +40,8 @@ from 5V to 3.3V,** as the transistor would take a 5V signal to the gate, opening
 The multimeter confirmed that the opening and closing the transistor would successfully pull the line
 to the desired level.
 
-I then quickly wrote `GC.h` and a program to test it. One challenge was to figure out how to send a store
-a byte to then send out. I'm sure I could use 8 8-bit chars, each one storing a 0 or 1, but this approach
+I then quickly wrote `GC.h` and a program to test it. One challenge was to figure out how to store
+a byte to then send out. I'm sure I could use 8 8-bit chars, with each char storing a 0 or 1, but this approach
 seemed irresponsibly wasteful of space, even if the Arduino could handle it. So, I came up with the idea
 to use an **array of bools**, since each bool only uses 1 bit. This would make it really easy to access
 each bit without taking up too much space. It's worth noting that, although I could hard code the sequence
@@ -67,16 +67,16 @@ wouldn't work at all.
 
 So, instead of using those functions, I decided to directly change and read from the `PORTD` register, which
 contains both PIN 2 and 3. However, I still wasn't able to read back any data. Since I still couldn't tell
-what was going on, I determed I had to buy an oscilloscope so that I could physically see how the
+what was going on, I determined I had to buy an oscilloscope so that I could physically see how the
 data line changes over time. I wasn't about to drop $300+ on a good one, though, so I went with a cheaper,
 $60 digital scope which I hoped would be suitable for my needs.
 
 Upon hooking up the oscilloscope, I ran the following loop on the Arduino:
 ```Arduino
 void loop() {
-  PIND &= ~0x08;
+  PORTD &= ~0x08;
   delayMicroseconds(1);
-  PIND |= 0x08;
+  PORTD |= 0x08;
   delayMicroseconds(3);
 }
 ```
@@ -93,21 +93,21 @@ work with the digital pins on the Arduino. I had to try something else.
 <br>
 <br>
 ## Alternate methods of communication
-Initially, I wanted to use an existing commuincation standard, specifically UART or I2C.
+Initially, I wanted to use an existing communication standard, specifically UART or I2C.
 After quickly deliberating how this might work, it was immediately shut down. UART sends start 
 and stop bits after every byte, which would interfere with the sequence. I2C would never work,
 since it requires an ongoing "conversation" between the master and slave. In addition, I would need
 a voltage converter chip, since this wouldn't work with the transistor circuit above. 
-No, this was the completely wrong approach. The GameCube controller uses its own communcation method, 
+No, this was the completely wrong approach. The GameCube controller uses its own communication method, 
 and no existing standard is going to fit it. I knew at this point I had to manually write to and read
 from the data line.
 
 This brings me back to the transistor setup from before. I had the thought that perhaps its physical
 properties prevented my signal from being properly transferred, or perhaps was interfering with the
 GameCube controller as it was trying to send back data. So, I looked for a different way wire the circuit,
-sans transitor.
+sans transistor.
 
-As I wanted to avoid having to buy components, I tried to find a solution withthe components in the
+As I wanted to avoid having to buy components, I tried to find a solution with the components in the
 Arudino kit that I already had. I first came to the optocoupler, which, like the transistor, is a
 sort of digital switch. Upon testing it, I realized that the response time is far too slow to
 make anything happen. I also thought to use a relay, but as the optocoupler was too slow, surely a 
@@ -154,14 +154,14 @@ my new device, I became very confused and worried. Using the same code as above,
 
 Two things seemed off here: First, The peaks looked almost more like a sawtooth wave than the desired square
 wave. More importantly, the voltage was not peaking at 3.3V. I'm sure a slightly lower peak would be
-acceptable, but the ~2.5V on the example was not going to work. It was considerable worse with 
+acceptable, but the ~2.5V on the example was not going to work. It was considerably worse with 
 shorter delays. I was confused because, if NicoHood's works like this, then mine should too,
 or at least look acceptable. 
 
 My best guess was that the particular chip I had was not fast enough, and I had to buy a better one.
-Its also possible that I broke it while soldering it. But, the seller of the particular chip that I 
+It's also possible that I broke it while soldering it. But, the seller of the particular chip that I 
 bought did not have a datasheet to explain anything about timing. So, I purchased a seemingly identical
-chip from Sparkfun which claimed to change state in the range of nanoseconds. After it finaly arrived,
+chip from Sparkfun which claimed to change state in the range of nanoseconds. After it finally arrived,
 I could confirm that it indeed worked far better than the previous chip. I now thought that I finally
 had the ticket to success.
 <br>
@@ -169,7 +169,7 @@ had the ticket to success.
 ## One step closer
 With my working converter, I started trying to find the right delays between state changes
 to send the right information. This mostly took a lot of trial and error with adding or removing
-NOPs between operations. To make everything a little more consistant, I tried adding the `volatile`
+NOPs between operations. To make everything a little more consistent, I tried adding the `volatile`
 keyword before the assembly blocks. Also, I disabled interrupts during the process. Finally, I
 changed my approach of boolean arrays to normal bytes, checking each individual bit by bitmasking.
 Although the boolean array would work, using bytes looks and feels far more professional.
@@ -180,7 +180,7 @@ After determining the right timings, I ran the entire sequence, getting the foll
 
 Almost... something wrong is happening, but the ping seems to be successful. The first, "taller"
 part is the data that I sent. Everything after that is the response from the controller. The controller
-is supposed to send back 8 bytes of data. If you count the peaks after the sequence, theres 64, which
+is supposed to send back 8 bytes of data. If you count the peaks after the sequence, there are 64, which
 means this must be the data the controller sent back.
 
 However, there must be a problem with the circuit, since the controller is unable to pull the data
@@ -197,7 +197,7 @@ the above signal, but the controller pulling the line all the way down. Finally!
 I was one step closer to a finished product.
 <br>
 <br>
-## Consistant Inconsistancy
+## Consistent Inconsistency
 Now that I could successfully get the controller to respond with its data, there was one more difficult
 task: actually reading the data. My immediate idea for a solution was pretty simple. Each bit is guaranteed
 to go low and then high for some period of time. The only way to differentiate between each bit is the
@@ -209,9 +209,9 @@ The problem, here, was the same as one of my original problems. I was left to bl
 right timings would be. All I could do was guess the readings, see the result of the readings, and
 verify if it was right. But, even if it was wrong, I wouldn't know how to adjust it.
 
-In addition, I was worried that it would be impossible to consistantly time the gap between each bit,
+In addition, I was worried that it would be impossible to consistently time the gap between each bit,
 as it was possible that the controller would not always send out the information at the same speed.
-So, I tried to come up with a more consistant way to read each bit. My solution looked like this:
+So, I tried to come up with a more consistent way to read each bit. My solution looked like this:
 ```Arduino
 while (PIND & 0x08);
 delay_2us();
@@ -233,33 +233,33 @@ command is executed. This way, I could make a much better approximation of when 
 and what state it should be reading.
 
 It was at this point I noticed something peculiar. The 24-bit sequence did not look correct, even though
-it did in previous tests. My guess was that it was being inconsistant, only looking right some of the
+it did in previous tests. My guess was that it was being inconsistent, only looking right some of the
 time. Every time, the sequence still prompted a response from the controller, but by just looking at
 the response, it seemed to be off. I was worried that I was doing something wrong. The problem with the
 sequence was that it did not get fully pulled to ground every 8 bits. Although I don't understand why
-this might have been, I realized that it must have been caused by the transisition between the different
+this might have been, I realized that it must have been caused by the transition between the different
 `send_byte()` functions.
 
 I wanted to be able to make a more module approach to sending data, by making a function that sends one
-byte at a time, but I realized that, for the sake of consistancy, I needed to send the entire sequence
+byte at a time, but I realized that, for the sake of consistency, I needed to send the entire sequence
 in one function, with no gap between bytes. So, I put the entire 24-bit sequence into a 32-bit unsigned
 int. I also added a stop bit at the end since I had the space. Using this method created a far better
-and more consistant sequence:
+and more consistent sequence:
 
 ![s6](images/s6.PNG "A proper ping sequence")
 
-Better yet, the response from the controller actually looked correct. Now I go back to focusing on
+Better yet, the response from the controller actually looked correct. Now I could go back to focusing on
 reading the data. I decided to attempt my original idea again, but this time I used the other probe
 on the oscilloscope to flag when the signal is being read.
 
 ![s7](images/s7.PNG "The rising edge of the yellow signal marks when the data is read")
 
 The rising edge of the yellow signal marks when the data is being read. Now, timing is even more
-crucial than it had been before. Once again, for the sake of consistancy, I decided to read all
+crucial than it had been before. Once again, for the sake of consistency, I decided to read all
 of the data into a single 64-bit unsigned int and deal with analyzing the data later. I had to 
 modify the timings of each delay to the exact NOP until the data was read correctly and 
-consistantly. I also had to change the delay between bits depending on whether or not the bit was 
-a 1 or a 0. Luckily, I wasn't in the dark this time, as I had a visual to see where exactlly the
+consistently. I also had to change the delay between bits depending on whether or not the bit was 
+a 1 or a 0. Luckily, I wasn't in the dark this time, as I had a visual to see where exactly the
 bits were being read.
 
 Once I got the timing right, I removed the second signal, and I had to make a few minor adjustments
@@ -270,10 +270,10 @@ to the timing to compensate. At that point, I finally had it. I was able to read
 The first thing I did was clean up `GC.h` and make some functions to deal with the data coming in. 
 `gc_test.ino` will constantly read and output the data to the serial monitor. 
 
-Currently, I want to make software that graphically displays the state of each button. I also want to
-use this program to control some sort of bigger hardware project, such as a tabletop game. I don't have 
-any clear ideas yet, but I'll get to it.
+I want to further improve `GC.h`, perhaps by developing it into a full library.
 
-I also want to further improve `GC.h`, perhaps by developing it into a full library.
+This project was the epitome of "good enough". A lot of what I did seems to just barely work, and
+could break at any time. I want to improve the stability and portability of this project to that
+it could work with any Arduino.
 
 Thanks for reading.
