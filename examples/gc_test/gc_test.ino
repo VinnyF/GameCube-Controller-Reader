@@ -1,13 +1,19 @@
+/*
+gc_test.ino
+By Vincent Ferrara
+https://github.com/VinnyF/GameCube-Controller-Reader
+
+This test will read the controller about ever 30ms.
+After each reading, the entire state of the controller
+it output to the serial monitor.
+*/
+
 #include <GC.h>
 
 GC_Controller gc(3);
-unsigned long long l_data;
-byte data[8];
 
 void setup() {
   Serial.begin(500000);
-  pinMode(3,OUTPUT);
-  digitalWrite(3,LOW);
 }
 
 void loop() {

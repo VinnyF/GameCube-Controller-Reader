@@ -11,8 +11,6 @@ byte buffer[8];
 
 void setup() {
   Serial.begin(512000);
-  pinMode(3,OUTPUT);
-  digitalWrite(3,LOW);
   gc.set_j_deadzone(10);
   gc.set_c_deadzone(10);
 }
@@ -29,10 +27,13 @@ void loop() {
   //Package data into buffer
   buffer[0] = data >> 56;
   buffer[1] = data >> 48;
+
+  //Don't get the raw data in order to preserve deadzone
   buffer[2] = gc.JOY_X();
   buffer[3] = gc.JOY_Y();
   buffer[4] = gc.C_X();
   buffer[5] = gc.C_Y();
+  
   buffer[6] = data >> 8;
   buffer[7] = data;
 
